@@ -1292,13 +1292,17 @@ toastletNotify.notify('success', 'Notification with custom style!', {
 
         function showNoTransitionExample() {
             toastletNotify.notify('error', 'No animations!', {
-                transition: false
+                transition: {
+                    enabled: false
+                }
             });
         }
 
         function showSlowTransitionExample() {
             toastletNotify.notify('notice', 'Slower animation!', {
-                transitionDuration: 800
+                transition: {
+                    duration: 800
+                }
             });
         }
 
@@ -1306,7 +1310,9 @@ toastletNotify.notify('success', 'Notification with custom style!', {
             toastletNotify.notify('success', 'Customized notification!', {
                 sticky: true,
                 customClass: 'rainbow-theme',
-                transitionDuration: 600
+                transition: {
+                    duration: 600
+                }
             });
         }
 
@@ -1346,13 +1352,18 @@ toastletNotify.notify('success', 'Notification with custom style!', {
             const transition = document.getElementById('customTransition').checked;
             const transitionDuration = parseInt(document.getElementById('customTransitionDuration').value);
 
-            const options = {};
+            const options = {
+                transition: {
+                    enabled: true,
+                    duration: 300 // default transition duration
+                }
+            };
             // Only add options if they differ from the default to keep the generated code clean
             if (duration !== 5000) options.duration = duration;
             if (sticky) options.sticky = true;
             if (customClass) options.customClass = customClass;
             if (!transition) options.transition = false; // default is true
-            if (transitionDuration !== 300) options.transitionDuration = transitionDuration; // default is 300
+            if (transitionDuration !== 300) options.transition.duration = transitionDuration; // default is 300
 
             toastletNotify.notify(type, message, options);
 
@@ -1566,7 +1577,52 @@ const userConfig11 = {
     stackableGap: {
         mobile: 12 // `desktop` deve vir do padrão
     }
-};        
+};    
+
+function isDeeplyFrozen(obj, visited = new WeakSet()) {
+  if (visited.has(obj)) return true;
+  visited.add(obj);
+  
+  if (!Object.isFrozen(obj)) return false;
+  
+  if (obj === null || typeof obj !== 'object') return true;
+  
+  const properties = [
+    ...Object.getOwnPropertyNames(obj),
+    ...Object.getOwnPropertySymbols(obj)
+  ];
+  
+  for (const prop of properties) {
+    const descriptor = Object.getOwnPropertyDescriptor(obj, prop);
+    
+    if (descriptor.configurable) return false;
+    
+    const value = descriptor.value;
+    if (value !== null && typeof value === 'object') {
+      if (!isDeeplyFrozen(value, visited)) return false;
+    }
+    
+    if (typeof value === 'function' && !Object.isFrozen(value)) {
+      return false;
+    }
+  }
+  
+  return true;
+}
+
+function runBenchMark() {
+
+    const now = performance.now();
+
+    toastletNotify.notify('info', 'Running performance benchmark...');
+
+    const end = performance.now();
+
+    const total = end - now;
+
+    console.log(`Tempo de execução do benchmark: ${total} ms`);
+
+}
 
     </script>
 </body>
