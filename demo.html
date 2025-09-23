@@ -1003,7 +1003,7 @@ toastletNotify.notify('success', 'Notification with custom style!', {
                              <input type="number" id="customDelay" value="5000" min="0" step="100">
                         </div>
                         <div class="form-group">
-                             <label style="opacity: 0;">Behavior</label>
+                             <!-- <label style="opacity: 0;">Behavior</label> -->
                              <label for="customSticky" style="display:flex; align-items:center; gap: 10px; cursor:pointer;">
                                 <input type="checkbox" id="customSticky" style="width: 1.2em; height: 1.2em;">
                                 Make it sticky
@@ -1577,7 +1577,235 @@ const userConfig11 = {
     stackableGap: {
         mobile: 12 // `desktop` deve vir do padrão
     }
-};    
+};
+
+const stackingTest1 = {
+    stacking: {
+        enabled: true
+    }
+};
+
+// Teste 2: Configuração Válida e Completa (tudo diferente do padrão)
+// Esperado: Todas as propriedades devem ser aceitas como estão.
+const stackingTest2 = {
+    stacking: {
+        enabled: true,
+        gap: {
+            desktop: 30,
+            mobile: 15
+        },
+        limit: 3,
+        newestOnTop: false
+    }
+};
+
+// Teste 3: Tipos de Dados Inválidos
+// Esperado: Cada propriedade inválida deve ser revertida para o seu valor padrão, com um console.warn.
+const stackingTest3 = {
+    stacking: {
+        enabled: 'sim',      // Inválido, deve virar o booleano padrão (false).
+        gap: 10,             // Inválido, deve ser um objeto. Deve virar o objeto padrão.
+        limit: 'cinco',      // Inválido, deve virar o número padrão (5).
+        newestOnTop: 0       // Inválido, deve virar o booleano padrão (true).
+    }
+};
+
+// Teste 4: Tipos de Dados Inválidos Dentro de 'gap'
+// Esperado: As propriedades inválidas dentro de 'gap' devem ser revertidas para o padrão.
+const stackingTest4 = {
+    stacking: {
+        enabled: true,
+        gap: {
+            desktop: '20px', // Inválido, deve virar o número padrão (20).
+            mobile: false    // Inválido, deve virar o número padrão (10).
+        }
+    }
+};
+
+// Teste 5: Valores Fora do Limite (Edge Cases)
+// Esperado: Números negativos devem ser revertidos para o padrão.
+const stackingTest5 = {
+    stacking: {
+        enabled: true,
+        gap: {
+            desktop: -10, // Inválido, deve virar o padrão (20).
+            mobile: -5    // Inválido, deve virar o padrão (10).
+        },
+        limit: -1        // Inválido, deve virar o padrão (5).
+    }
+};
+
+// Teste 6: Propriedades Inexistentes
+// Esperado: A propriedade 'direction' deve ser removida com um console.warn.
+const stackingTest6 = {
+    stacking: {
+        enabled: true,
+        limit: 4,
+        direction: 'vertical' // Propriedade inexistente
+    }
+};
+
+// Teste 7: Configuração Parcial
+// Esperado: A propriedade 'enabled' deve ser 'true', e o resto deve vir dos valores padrão.
+const stackingTest7 = {
+    stacking: {
+        enabled: true,
+        limit: 8
+        // 'gap' e 'newestOnTop' devem ser preenchidos com os padrões.
+    }
+};
+
+// Teste 8: Objeto 'stacking' malformado (não é um objeto)
+// Esperado: A configuração inteira de 'stacking' deve ser revertida para o objeto padrão.
+const stackingTest8 = {
+    stacking: 'enable' // Inválido, deve ser um objeto.
+};
+
+// Teste 9: Objeto 'gap' malformado
+// Esperado: A propriedade 'gap' deve ser revertida para o objeto padrão, mas o resto de 'stacking' mantido.
+const stackingTest9 = {
+    stacking: {
+        enabled: true,
+        gap: '20px'
+    }
+};
+
+const onClickTest1 = {
+
+    onClick: function(e, toast, clickControl) {
+
+        console.log('');
+        console.log('onClick function executed');
+        console.log('This:\n', this);
+        console.log('Event:\n', event);
+        console.log('Toast Element:\n', toast);
+        console.log('Click Control:\n', clickControl);
+        console.log('');
+
+    }
+
+};
+
+const onPauseTest1 = {
+
+    onPause: function(id, controller, elapsed) {
+
+        console.log('');
+        console.log('onPause function executed');
+        console.log('This:\n', this);
+        console.log('ID: ', id);
+        console.log('Controller:\n', controller);
+        console.log('Elapsed Time: ', elapsed);
+        console.log('');
+
+    }
+
+};
+
+const onPlayTest1 = {
+
+    pause: {
+        resumeStrategy: 'restart'
+    },
+
+    onPlay: function(id, controller, resumeStrategy) {
+
+        console.log('');
+        console.log('onPlay function executed with resume strategy "restart"');
+        console.log('This:\n', this);
+        console.log('ID: ', id);
+        console.log('Controller:\n', controller);
+        console.log('Resume Strategy: ', resumeStrategy);
+        console.log('');
+
+    }
+
+};
+
+const onPlayTest2 = {
+
+    pause: {
+        resumeStrategy: 'resume'
+    },
+
+    onPlay: function(id, controller, resumeStrategy) {
+
+        console.log('');
+        console.log('onPlay function executed with resume strategy "resume"');
+        console.log('This:\n', this);
+        console.log('ID: ', id);
+        console.log('Controller:\n', controller);
+        console.log('Resume Strategy: ', resumeStrategy);
+        console.log('');
+
+    }
+
+};
+
+const onShowTest1 = {
+
+    onShow: function(id, controller) {
+
+        console.log('');
+        console.log('onShow function executed');
+        console.log('This:\n', this);
+        console.log('ID: ', id);
+        console.log('Controller:\n', controller);
+        console.log('');
+
+    }
+
+};
+
+const beforeCloseTest1 = {
+
+    beforeClose: function(id, controller, reason) {
+
+        console.log('');
+        console.log('beforeClose function executed');
+        console.log('This:\n', this);
+        console.log('ID: ', id);
+        console.log('Controller:\n', controller);
+        console.log('Reason: ', reason);
+        console.log('');
+
+    }
+
+};
+
+const beforeCloseTest2 = {
+
+    beforeClose: function(id, controller, reason) {
+
+        console.log('');
+        console.log('beforeClose function executed - returning false to prevent close');
+        console.log('This:\n', this);
+        console.log('ID: ', id);
+        console.log('Controller:\n', controller);
+        console.log('Reason: ', reason);
+        console.log('');
+
+        return reason !== 'timer'
+
+    }
+
+};
+
+const onCloseTest1 = {
+
+    onClose: function(id, controller, reason) {
+
+        console.log('');
+        console.log('onClose function executed');
+        console.log('This:\n', this);
+        console.log('ID: ', id);
+        console.log('Controller:\n', controller);
+        console.log('Reason: ', reason);
+        console.log('');
+
+    }
+
+};
 
 function isDeeplyFrozen(obj, visited = new WeakSet()) {
   if (visited.has(obj)) return true;
