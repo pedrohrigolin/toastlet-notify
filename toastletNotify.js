@@ -101,13 +101,39 @@
     }
 
     // ?? TALVEZ ADICIONAR MAIS OPÇÕES DE PROGRESSBAR?
+
+    // TODO: APARENTEMENTE O MOUSE OVER NÃO ESTÁ FUNCIONANDO MUITO BEM,
+    // TODO: QUANDO CLICA E ARRASTA PARA FORA, ELE MANTÉM O ESTADO DE HOVER.
+
     // TODO: VERIFICAR OS @SINCE DOS DOCBLOCKS
 
     // TODO: REPENSAR A ESTRUTURA DE TOASTLETINSTANCES PARA ESCALAR MELHOR
+
     // TODO: ADICIONAR A FUNÇÃO RESTART PARA REINICIAR O TIMER
+
     // TODO: PASSAR AS FUNÇÕES DE CONTROLE DA API PÚBLICA PARA A API INTERNA E EXPOR ISSO NA PÚBLICA
 
     // TODO: VERIFICAR COMO ESTÁ O FUNCIONAMENTO DO FOCUS/BLUR QUANDO SE USA HTML CUSTOMIZADO
+
+    // TODO: LEMBRAR DE ADICIONAR AS CLASSES
+
+    // TODO: CRIAR MECANISMO PARA GERENCIAR CLASSES DINÂMICAS E FIXAS
+
+    // TODO: PERMITIR CONFIGURAÇÃO DO TAMANHO MÍNIMO PARA SER CONSIDERADO MOBILE (mínimo 500px, máximo 1300px)
+
+    // TODO: ORGANIZAR O OBJETO DE INSTANCIA
+
+    // ?? Talvez permitir mais um alias para o top-middle e bottom-middle (top-center, bottom-center)?
+
+    /**
+     * * Pontos a se avaliar nos testes finais:
+     * 
+     * * Testar intensamente o funcionamente de focus/blur, hover, e suas interações
+     * * entre diferentes configurações, handlers, callbacks e etc. Tem muito edge case nisso.
+     * 
+     * * Testar bem o funcionamento do modo stackable
+     * 
+     */
 
     /**
      * Regular Expression Constants
@@ -3130,11 +3156,13 @@
      */
     const toastletInstances = Object.seal({
 
+        // TODO: NA DOCUMENTAÇÃO, ENFATIZAR QUE O ID 0 SEMPRE TERÁ TODOS OS LAST*ID COMO 0
+
         all: new Map(), // Store all toast elements by ID
 
-        nonStackable: new Map(), // Store non-stackable toast IDs
-
         stackable: new Map(), // Store stackable toast IDs
+        
+        nonStackable: new Map(), // Store non-stackable toast IDs
 
         sticky: new Map(), // Store sticky toast IDs
 
@@ -3155,6 +3183,18 @@
          * Represents the last value used for a toast's unique identifier.
          */
         lastId: 0,
+
+        lastStackableId: 0,
+        
+        lastNonStackableId: 0,
+
+        lastStickyId: 0,
+
+        lastNonStickyId: 0,
+
+        lastDismissibleId: 0,
+
+        lastNonDismissibleId: 0,
 
         /**
          * Registers a newly created toast instance into the registry system with comprehensive categorization
@@ -3294,20 +3334,44 @@
 
             toastletInstances.id++;
 
-            if( toastInstance.isStackable )
+            if( toastInstance.isStackable ) {
+                
                 toastletInstances.stackable.set(toastletInstances.lastId, toastInstance);
-            else
+                toastletInstances.lastStackableId = toastletInstances.lastId;
+
+            }
+            else {
+
                 toastletInstances.nonStackable.set(toastletInstances.lastId, toastInstance);
+                toastletInstances.lastNonStackableId = toastletInstances.lastId;
 
-            if( toastInstance.isSticky )
+            }
+
+            if( toastInstance.isSticky ) {
+                
                 toastletInstances.sticky.set(toastletInstances.lastId, toastInstance);
-            else
-                toastletInstances.nonSticky.set(toastletInstances.lastId, toastInstance);
+                toastletInstances.lastStickyId = toastletInstances.lastId;
 
-            if( toastInstance.isDismissible )
+            }
+            else {
+
+                toastletInstances.nonSticky.set(toastletInstances.lastId, toastInstance);
+                toastletInstances.lastNonStickyId = toastletInstances.lastId;
+                
+            }
+
+            if( toastInstance.isDismissible ) {
+
                 toastletInstances.dismissible.set(toastletInstances.lastId, toastInstance);
-            else
+                toastletInstances.lastDismissibleId = toastletInstances.lastId;
+
+            }
+            else {
+                
                 toastletInstances.nonDismissible.set(toastletInstances.lastId, toastInstance);
+                toastletInstances.lastNonDismissibleId = toastletInstances.lastId;
+            
+            }
 
         }),
 
@@ -3616,7 +3680,67 @@
 
             return lastId;
 
-        })
+        }),
+
+        getLastStackableId: objFreeze( () => {
+
+            let lastId = toastletInstances.lastStackableId;
+
+            for( const [id] of toastletInstances.stackable ) lastId = id;
+
+            return lastId;
+
+        }),
+
+        getLastNonStackableId: objFreeze( () => {
+
+            let lastId = toastletInstances.lastNonStackableId;
+
+            for( const [id] of toastletInstances.nonStackable ) lastId = id;
+
+            return lastId;
+
+        }),
+
+        getLastStickyId: objFreeze( () => {
+
+            let lastId = toastletInstances.lastStickyId;
+
+            for( const [id] of toastletInstances.sticky ) lastId = id;
+
+            return lastId;
+
+        }),
+
+        getLastNonStickyId: objFreeze( () => {
+
+            let lastId = toastletInstances.lastNonStickyId;
+
+            for( const [id] of toastletInstances.nonSticky ) lastId = id;
+
+            return lastId;
+
+        }),
+
+        getLastDismissibleId: objFreeze( () => {
+
+            let lastId = toastletInstances.lastDismissibleId;
+
+            for( const [id] of toastletInstances.dismissible ) lastId = id;
+
+            return lastId;
+
+        }),
+
+        getLastNonDismissibleId: objFreeze( () => {
+
+            let lastId = toastletInstances.lastNonDismissibleId;
+
+            for( const [id] of toastletInstances.nonDismissible ) lastId = id;
+
+            return lastId;
+
+        }),
 
     });
 
@@ -6503,7 +6627,7 @@
             toast: {
 
                 click: (toastInstance, e) => {
-
+                    
                     if(
                         ! toastInstance.toast || 
                         toastInstance.isClosing || 
@@ -6559,7 +6683,7 @@
                     toastInstance.timeoutIDs.pointerEvent = setTimeout(toastletCore.timeouts.pointerEvent, 10, toastInstance);
 
                 },
-
+                // TODO: DAR UMA REVISADA NESSA PARTE, E NA INTERAÇÃO DO POINTEREVENT
                 mouseenter: (toastInstance, e) => {
         
                     if (
@@ -6587,7 +6711,7 @@
                     }
 
                 },
-
+                // TODO: DAR UMA REVISADA NESSA PARTE, E NA INTERAÇÃO DO POINTEREVENT
                 mouseleave: (toastInstance, e) => {
 
                     if (
@@ -6598,7 +6722,7 @@
                         ! toastInstance.isMouseHovered ||
                         ! toastInstance.canHover ||
                         ! toastInstance.pointerFine || 
-                        toastInstance.isPointerEvent ||
+                        // toastInstance.isPointerEvent ||
                         toastInstance.isTouchEvent || 
                         ( e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents )
                     ) return;
@@ -9366,7 +9490,7 @@
 
             }
 
-        }
+        },
 
     });
 
@@ -10430,10 +10554,12 @@
                     controller.close = () => toastletNotify.close(toastInstance.id);
 
                 if( ! toastletNotify.isSticky ){
+
                     controller.play = () => toastletNotify.play(toastInstance.id);
                     controller.pause = () => toastletNotify.pause(toastInstance.id);
                     controller.resume = () => toastletNotify.resume(toastInstance.id);
                     controller.restart = () => toastletNotify.restart(toastInstance.id);
+
                 }
 
                 if( ! toastletTypeValidators.null(toastInstance.clickControl) )
